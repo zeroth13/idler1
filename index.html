@@ -1,1 +1,65 @@
-<h1>Hello World!</h1>
+
+<!DOCTYPE html>
+<html>
+	
+	<head>
+		<title>Idler1</title>
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+		<link href="https://fonts.googleapis.com/css?family=Play" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Orbitron:400,700" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="idler1.css" />
+		<script src="jquery-3.3.1.min.js"></script>
+		<script type="text/javascript" src="idler1.js"></script>
+	</head>
+	
+	
+	<body>
+		
+		<div id="d_header" onclick="ghtml_inventory()">
+			<h1>THE PROTOTYPE</h1>
+		</div>
+		
+		<div id="d_maincont">
+			
+			<div id="d_inventory" class="main_panel">
+				<div class="padding0"><h3>INVENTORY</h3></div>
+				<div id="inventory_area" class="padding"></div>
+			</div>
+			
+			<div id="d_coder" class="main_panel">
+				<div class="padding0"><h3>GLYPH ENCODER</h3></div>
+				<div class="padding"><textarea  placeholder="Code goes here." id="coder_text" ondrop="return false;"></textarea></div>
+				<div class="padding"><div id="coder_slot" class="proc_slot"></div></div>
+			</div>
+			
+			<div id="d_engine" class="main_panel">
+				
+				<div class="padding0"><h3>ORION ENGINE</h3></div>
+				
+				<div class="horizontal_frames padding">
+					<div class="padding"></div><div id="engine_memory"></div>
+					<div class="padding"></div><div id="engine_code"></div>
+					<div class="padding"></div><div id="engine_surface"></div>
+				</div>
+				
+				<div class="horizontal_frames padding">
+					<div class="padding"><div id="engine_procslot" class="proc_slot"></div></div>
+					<div class="padding"><button type="button" onclick="engineSwitchon()" id="engine_switchon" class="engine_btn"><img src="img/ui_on.png" /></button></div>
+					<div class="padding"><button type="button" onclick="engineOpen();" id="engine_open" class="engine_btn"><img src="img/ui_signal.png" /></button></div>
+					<div class="padding"><button type="button" onclick="return false;" id="engine_purge" class="engine_btn"><img src="img/ui_x.png" /></button></div>
+				</div>
+			</div>
+			
+			<div id="d_book" class="main_panel">
+				<div class="padding0"><h3>JOURNAL</h3></div>
+			</div>
+			
+		</div>
+		
+		<div id="d_footer">
+			<p><span></span></p>
+		</div>
+		
+	</body>
+	
+</html>
