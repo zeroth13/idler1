@@ -29,6 +29,57 @@ textarea {
     outline: none;
 }
 
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+	supported by Chrome and Opera */
+}
+
+
+.anim_fadein{
+	animation: fadein 1s;
+    -moz-animation: fadein 1s; /* Firefox */
+    -webkit-animation: fadein 1s; /* Safari and Chrome */
+    -o-animation: fadein 1s; /* Opera */
+}
+
+@keyframes fadein {
+    from {
+        opacity:0;
+	}
+    to {
+        opacity:1;
+	}
+}
+@-moz-keyframes fadein { /* Firefox */
+    from {
+        opacity:0;
+	}
+    to {
+        opacity:1;
+	}
+}
+@-webkit-keyframes fadein { /* Safari and Chrome */
+    from {
+        opacity:0;
+	}
+    to {
+        opacity:1;
+	}
+}
+@-o-keyframes fadein { /* Opera */
+    from {
+        opacity:0;
+	}
+    to {
+        opacity: 1;
+	}
+}
+
 /* Tooltip container */
 .tt {
     position: relative;
@@ -46,17 +97,17 @@ textarea {
     padding: 5px 0;
     border-radius: 6px;
 	border: 1px solid black;
-
-/* Position the tooltip text */
-position: absolute;
-z-index: 1;
-bottom: 125%;
-left: 50%;
-margin-left: -60px;
-
-/* Fade in tooltip */
-opacity: 0;
-transition: opacity 0.3s;
+	
+	/* Position the tooltip text */
+	position: absolute;
+	z-index: 1;
+	bottom: 125%;
+	left: 50%;
+	margin-left: -60px;
+	
+	/* Fade in tooltip */
+	opacity: 0;
+	transition: opacity 0.3s;
 }
 
 /* Tooltip arrow */
@@ -75,6 +126,60 @@ transition: opacity 0.3s;
 .tt:hover .ttt {
     visibility: visible;
     opacity: 1;
+}
+
+.main_panel{
+	display:none;
+	//overflow: auto; 
+	//float:left;
+	width:350px;
+	height:100%;
+	background-color: #555;
+	border: 1px solid black;
+	display: flex;
+    justify-content: space-between;
+	flex-direction:column;
+}
+
+.panel_selector{
+	width:12%;
+	//float:left;
+	text-align:center;
+	//margin:1em 0;
+	line-height:2em;
+	border:2px solid white;
+	background-color:#000;
+}
+
+.panel_selector_hidden{
+	color: #777 !important;
+}
+
+.panel_selector:hover{
+	background-color:#222;
+}
+
+.horizontal_frames{
+	display: flex;
+	flex-direction:row;
+	align-self: center;
+	justify-content: center;
+}
+
+.vertical_frames{
+	display: flex;
+	flex-direction:column;
+	align-self: center;
+	justify-content: center;
+}
+
+.vertical_frames2{
+	display: flex;
+	flex-direction:column;
+	height: 100%;
+	//background-color: #fff;
+	//align-self: center;
+	justify-content: space-between !important;
 }
 
 .padding0{
@@ -130,17 +235,7 @@ transition: opacity 0.3s;
 	justify-content: space-around;
 }
 
-.main_panel{
-	//overflow: auto; 
-	//float:left;
-	width:350px;
-	height:100%;
-	background-color: #555;
-	border: 1px solid black;
-	display: flex;
-    //justify-content: center;
-	flex-direction:column;
-}
+
 
 #inv_table{
 	border: 1px solid black;
@@ -176,13 +271,14 @@ table img {
 }
 
 .proc_slot img{
+	align-self: center;
 	position: relative;
 	top: 50%;
 	transform: translateY(-50%);
 }
 
 .coder_slot_glow{
-	border: 3px solid #40dd74 !important;
+	border: 3px solid #00dd00 !important;
 	transition: 1s linear;
 }
 .coder_slot_fade{
@@ -196,13 +292,10 @@ table img {
 	height: 400px;
 	width: 200px;
 	align-self: center;
+	font-size: 18px;
 }
 
-.horizontal_frames{
-	display: flex;
-	align-self: center;
-	justify-content: center;
-}
+
 
 
 
@@ -222,7 +315,7 @@ button:hover{
 }
 
 .btn_on{
-	background-color: #40dd74 !important;
+	background-color: #00dd00 !important;
 	transition: 1s linear;
 }
 
@@ -242,7 +335,7 @@ button:hover{
 }
 
 #esurf_table{
-	border: 3px solid black;
+	border: 3px solid #222;
 	background-color: #666;
 	//margin: 0 auto;
 	align-self: center;
@@ -252,17 +345,20 @@ button:hover{
 	//border: 1px solid black;
 	width: 33px;
 	height: 33px;
-	background-color: #444;
+	background-color: #111;
+	position: relative;
 }
 
 .esurf_open{
-	border: 3px dashed black !important;
+	border: 3px dashed #222 !important;
 }
 
 #engine_spointer{
 	transform: rotate(90deg) translateY(20px);
 	z-index: +5;
 	transition: transform .5s;
+	position: absolute;
+	top: 0%;
 }
 
 #engine_spointer path {
@@ -270,12 +366,61 @@ button:hover{
 	transition: 1s linear;
 }
 .engine_spointer_on path {
-	fill: #40dd74 !important;
+	fill: #00dd00 !important;
 }
 
+#engine_storage {
+	background-color: #111;
+	width: 33px;
+	height: 33px;
+	border: 3px solid #353535;
+	border-radius: 10px;
+	display:flex;
+	justify-content: center;
+}
 
+#emem_table{
+	border: 0;
+	background-color: #666;
+	//margin: 0 auto;
+	align-self: center;
+	transition: 1s linear;
+	text-align: center;
+    color: #ccc;
+}
+#emem_table td {
+	//border: 1px solid black;
+	width: 55px;
+	height: 20px;
+	background-color: #224;
+	transition=0.5s;
+}
+#emem_table th {
+	border: 5px solid #000;
+	width: 55px;
+	height: 40px;
+	background-color: #223838;
+	transition=0.5s;
+}
+.emem_active{
+	background-color: #22b !important;
+}
 
+#ecodebar_canvas{
+	align-self: center;
+	background-color: #002200;
+	border: 3px solid #000;
+	width: 30px;
+	height: 350px;
+}
 
-
-
-
+.img_quanta {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+	width: 32px;
+	height: 32px;
+	align-self: center;
+	z-index: 0;
+	//position: absolute;
+}
