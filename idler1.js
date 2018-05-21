@@ -15,14 +15,6 @@ function roll(x){
 var svgs={};
 svgs.spointer='<svg id="engine_spointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 32px; width: 32px;"><rect fill="#000" fill-opacity="0" height="512" width="512" rx="32" ry="32"></rect><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M247 65.16L32.34 440.8l61.79-35.7L247 137.6zm18 .38V137l158.3 271.3 62.7 36.1C412.2 318.2 338.6 191.8 265 65.54zM415.4 424.5l-321.3 1.4-62.72 36.2 445.82-1.9z" fill="#000" fill-opacity="1"></path></g></svg>'
 
-//static dictionary of quanta, items, etc...
-var dict={};
-dict.quanta={};
-
-dict.quanta.faint_ember={name:'faint ember',scanid:1,img:'q_ember_dg.png',imgscale:0.5};
-dict.quanta.dim_ember={name:'dim ember',scanid:2,img:'q_ember_lg.png',imgscale:0.7};
-dict.quanta.pale_ember={name:'pale ember',scanid:3,img:'q_ember_w.png',imgscale:0.9};
-
 //world state variable
 var w = {};
 
@@ -36,14 +28,14 @@ function initWorld(loadIfAvailable=false){
 	w.timestep=100;//milliseconds per timestep
 	w.time=0;//total **timesteps**
 	w.longtimestep=5;//number of **timesteps** that constitute one long timestep
-	w.autosavefreq=60*1000;
+	w.autosavefreq=60*Math.round(1000/w.timestep);//currently 1 minute
 	
 	w.panels={};//stuff about panels
-	w.panels.journal={shown:true};
+	w.panels.journal={shown:false};
 	w.panels.inventory={shown:true};
 	w.panels.coder={shown:true};
 	w.panels.engine={shown:true};
-	w.panels.distil={shown:false};
+	w.panels.distil={shown:true};
 	
 	w.engine={};
 	w.engine.on=false;
@@ -62,6 +54,10 @@ function initWorld(loadIfAvailable=false){
 	w.engine.mpPos=0;//memory pointer
 	w.engine.ipPos=0;//instruction pointer
 	
+	w.distil={};
+	w.distil.stacklength=5;//slots in each stack
+	w.distil.stacks=[{active:true,slots:[]},{active:true,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]}];
+	
 	w.items=[];
 	w.items_nextid=1; //starting at zero gave me migraines due to null/zero/undefined bugs... so this is the lazy solution
 	
@@ -73,25 +69,29 @@ function initWorld(loadIfAvailable=false){
 function initDebug(){ //debug state for testing
 	var tmp;
 	
-	tmp = newItem('Glyphmatrix','obj_processor.png')
-	moveItem(tmp.id,'inv',0)
-	tmp.code="mst 1;mmu 2;set -999;add @;0jm 2;jmp -4;mcl;stp".trim().split(/[\n;]+/);;
-	tmp.codeable=true;
+	tmp = dict.newItem('processor');
+	moveItem(tmp.id,'inv',0);
+	tmp.code="mst 1;mmu 2;set -999;add @;0jm 2;jmp -4;mcl;stp".trim().split(/[\n;]+/);
 	
-	tmp = newItem('Glyphmatrix','obj_processor.png')
-	moveItem(tmp.id,'inv',1)
-	tmp.code=[];
-	tmp.codeable=true;
+	tmp = dict.newItem('processor');
+	moveItem(tmp.id,'inv',1);
 	
-	tmp = newItem('???','obj_misc.png')
-	moveItem(tmp.id,'inv',27)
-	tmp.codeable=false;
+	tmp = dict.newItem('vial');
+	//tmp.cont='test';
+	moveItem(tmp.id,'distil',0,0);
+	
+	tmp = dict.newItem(null);
+	moveItem(tmp.id,'inv',27);
 	
 	//w.engine.surface[6]={quantum:'faint_ember'};
 	//w.engine.surface[8]={quantum:'dim_ember'};
 	//w.engine.surface[1]={quantum:'pale_ember'};
 	//w.engine.surface[0]={quantum:'pale_ember'};
 	//w.engine.storage={quantum:'pale_ember'};
+	
+	//w.distil.stacks[0].storage={quantum:'pale_ember'};
+	//w.distil.stacks[1].storage={quantum:'dim_ember'};
+	//w.distil.stacks[2].storage={quantum:'faint_ember'};
 	
 }
 
@@ -104,23 +104,13 @@ function forceLoadWorld(){//for debugging
 	ghtml_renderall();
 }
 
-function newItem(name,img){
-	var item={};
-	item.name=name;
-	item.id=w.items_nextid;
-	item.img=img;
-	item.moveable=true;
-	w.items[w.items_nextid]=item;
-	w.items_nextid++;
-	return item;
-}
 
-function moveItem(id,dest,destslot=null){
+function moveItem(id,dest,destslot=null,destsubslot=null){
 	var item = w.items[id];
 	
 	if(!item.moveable){return false;}
 	
-	var oldloc=item.loc, oldlocslot=item.locslot;
+	var oldloc=item.loc, oldlocslot=item.locslot, oldlocsubslot=item.locsubslot;
 	var invUpdated=false;
 	
 	//move item to new location.
@@ -140,6 +130,13 @@ function moveItem(id,dest,destslot=null){
 		item.loc='engineproc';
 		ghtml_engineproc();
 	}
+	else if (dest=='distil' && !w.distil.stacks[destslot].slots[destsubslot]) {
+		w.distil.stacks[destslot].slots[destsubslot]=item.id;
+		item.loc='distil';
+		item.locslot=destslot;
+		item.locsubslot=destsubslot;
+		ghtml_distilstacks(true);
+	}
 	// else if(!w.otherlocs[dest]){ //if otherloc not occupied, move it to there
 	// w.otherlocs[dest]=item.id;
 	// item.loc=dest;
@@ -155,13 +152,18 @@ function moveItem(id,dest,destslot=null){
 			item.code=$("#coder_text").val().trim().split(/[\n;]+/);
 			for(var i=0;i<item.code.length;i++){item.code[i]=item.code[i].trim();}
 			item.code=item.code.filter(function(a){return a !== ''});
+			item.code=item.code.slice(0,item.maxcode);
 			w.otherlocs.coder=null;
-			w.engine.ipPos=0;
 			ghtml_coder();
 		}
 		else if (oldloc=='engineproc') {
 			w.otherlocs.engineproc=null;
+			w.engine.ipPos=0;
 			ghtml_engineproc();
+		}
+		else if (oldloc=='distil') {
+			w.distil.stacks[oldlocslot].slots[oldlocsubslot]=null;
+			ghtml_distilstacks(true);
 		}
 		// else {
 		// w.otherlocs[oldloc]=null;//for misc locs with only one slot
@@ -221,6 +223,17 @@ function dropItem_inEngineproc(ev) {
 		moveItem(item.id,'engineproc');
 	}
 }
+function dropItem_inDistil(ev,stack,stackslot) {
+	if(w.distil.stacks[stack].slots[stackslot]){return false;}
+    ev.preventDefault();
+    var data = JSON.parse(ev.dataTransfer.getData("text"));
+	if(data.type=='item'){
+		var item = w.items[data.id];
+		//if(!item.distilable){return false;}
+		moveItem(item.id,'distil',stack,stackslot);
+	}
+}
+
 
 function engineSwitchon(){
 	if(w.engine.on){
@@ -255,8 +268,9 @@ function engineOpen(){
 	}
 }
 
-function ghtml_tooltip(base,tooltip){
-	return '<div class="tt">'+base+'<span class="ttt">'+tooltip+'</span></div>';
+function ghtml_itemTooltip(base,itemid){
+	var tooltip=dict.updateItemTooltip(itemid);
+	return '<div class="tt">'+base+'<span class="ttt" id="itemTooltip_'+itemid+'">'+tooltip+'</span></div>';
 }
 
 //generate inventory table in html
@@ -273,7 +287,7 @@ function ghtml_inventory(){
 			if(item){
 				//table+='<td>'+item.name+'</td>';
 				var tmp='<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">';
-				table+='<td>'+ghtml_tooltip(tmp,item.name)+'</td>';
+				table+='<td>'+ghtml_itemTooltip(tmp,item.id)+'</td>';
 			}
 			else {
 				table+='<td ondrop="dropItem_inInv(event,'+invslot+')" ondragover="allowDrop(event)"></td>';
@@ -291,7 +305,7 @@ function ghtml_coder() {
 	var textarea = $("#coder_text");
 	if(w.otherlocs.coder){
 		var item = w.items[w.otherlocs.coder];
-		var h=ghtml_tooltip('<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">',item.name);
+		var h=ghtml_itemTooltip('<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">',item.id);
 		slot.html(h);
 		slot.removeAttr('ondrop');
 		slot.removeAttr('ondragover');
@@ -324,7 +338,7 @@ function ghtml_engineproc() {
 	var slot = $("#engine_procslot");
 	if(w.otherlocs.engineproc){
 		var item = w.items[w.otherlocs.engineproc];
-		var h=ghtml_tooltip('<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">',item.name);
+		var h=ghtml_itemTooltip('<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">',item.id);
 		slot.html(h);
 		slot.removeAttr('ondrop');
 		slot.removeAttr('ondragover');
@@ -376,8 +390,8 @@ function ghtml_enginesurface(redraw=false,specslot=-2){
 		var table='<table id="esurf_table"><tbody>';
 		var leny=w.engine.surfacenum;
 		for (var y=0; y<leny; y++) {
-		var content='';
-		table+='<tr><td>'+content+'</td></tr>';
+			var content='';
+			table+='<tr><td>'+content+'</td></tr>';
 		}
 		table+='</tbody></table>';
 		$("#engine_surface").html(table);
@@ -431,6 +445,50 @@ function ghtml_enginememory(redraw=false,storeslot=false){
 	
 }
 
+function ghtml_distilstacks(redraw=false,specstorage=-1){
+	
+	//redraw only one stack's single-quantum storage then return
+	if(specstorage>-1){
+		var storage=$('.distil_stack').eq(specstorage).children('.distil_storage');
+		storage.children('.img_quanta').remove();
+		if(w.distil.stacks[specstorage].storage){
+			var content='';
+			var quantumtype=w.distil.stacks[specstorage].storage.quantum;
+			content=dict.quanta[quantumtype].img;
+			scale=Math.round(dict.quanta[quantumtype].imgscale*32);
+			content='<img src="img/'+content+'" class="img_quanta" style="width:'+scale+'px;height:'+scale+'px"/>';
+			storage.append(content);
+			storage.children('.img_quanta').addClass('anim_fadein');
+		}
+		return;
+	}
+	
+	
+	if(redraw){
+		$('.distil_stack').each(function( ind ) {
+			if(!w.distil.stacks[ind].active){$(this).hide();return;}//dont draw locked stacks
+			
+			$(this).show();
+			
+			var table='<table><tbody>';
+			var leny=w.distil.stacklength;
+			for (var y=0; y<leny; y++) {
+				var contents='';
+				var item=w.items[w.distil.stacks[ind].slots[y]];
+				if(item){
+					contents+='<img class="itemimg" src="img/'+item.img+'" draggable="true" ondragstart="dragItem(event,'+item.id+')" ondragend="dragItemEnd(event)">';
+					contents=ghtml_itemTooltip(contents,item.id);
+				}
+				table+='<tr><td ondrop="dropItem_inDistil(event,'+ind+','+y+')" ondragover="allowDrop(event)">'+contents+'</td></tr>';
+			}
+			table+='</tbody></table>';
+			$(this).children('.distil_stack_slots').html(table);
+			
+			ghtml_distilstacks(false,ind);
+		});
+	}
+}
+
 function ghtml_renderall(){
 	//for(var i=0;i<w.panels.length;i++){
 	for(var panel in w.panels){
@@ -449,6 +507,7 @@ function ghtml_renderall(){
 	ghtml_engineproc();
 	ghtml_enginesurface(true);
 	ghtml_enginememory(true);
+	ghtml_distilstacks(true);
 	
 	if(w.engine.open){
 		$('#esurf_table').addClass('esurf_open');
@@ -659,15 +718,19 @@ function simStep(){
 					ghtml_enginememory();
 					break;
 					
-					case 'psh'://pushes quantum in storage to the distillery. [[CURRENTLY JUST DELETES THE QUANTUM]]
-					var stor=w.engine.storage;
-					if(stor){
+					case 'psh'://pushes quantum in storage to the distillery of given number. (note that dist number starts at 1 while arrays start at 0...)
+					var distnum=parseDatum(ops[1])-1;//note the -1...
+					var stor=w.engine.storage, dist=w.distil.stacks[distnum];
+					if(stor && dist && dist.active && !dist.storage){
 						w.engine.storage=null;
+						dist.storage=stor;
+						ghtml_enginesurface(false,-1);
+						ghtml_distilstacks(false,distnum);
 					}
-					ghtml_enginesurface(false,-1);
 					break;
 					
-					case 'pul'://pulls a quantum from the distillery to storage [[CURRENTLY DOES NOTHING]]
+					case 'pul'://pulls a quantum from the distillery of given number to storage.
+					//[[CURRENTLY DOES NOTHING]]
 					ghtml_enginesurface(false,-1);
 					break;
 					
@@ -693,7 +756,7 @@ function simStep(){
 	
 	//engine surface gathers quanta if open
 	if(w.engine.open){
-		if(rand(60/60)){
+		if(rand(600/600)){
 			var slot = roll(w.engine.surfacenum);
 			if(!w.engine.surface[slot]){
 				w.engine.surface[slot]={quantum:'faint_ember'};
@@ -721,4 +784,4 @@ $( document ).ready(function() {
 	//start the main sim loop
 	var simloop = setInterval(function(){ simStep() }, w.timestep);
 	
-	});																				
+	});																									

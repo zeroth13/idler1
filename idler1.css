@@ -17,7 +17,21 @@ h3 {
 	border-radius: 10px;
 	color: #fff;
 	padding: 0.4em;
-	//font-weight: normal;
+	//align-self:center;
+	text-align:center;
+	font-weight: bold;
+}
+
+h4 {
+	background-color: #222;
+	border-radius: 10px;
+	color: #fff;
+	padding: 0.3em;
+	margin: .3em;
+	//align-self:center;
+	text-align:center;
+	font-weight: bold;
+	width:2.4em;
 }
 
 textarea {
@@ -90,9 +104,9 @@ textarea {
 /* Tooltip text */
 .tt .ttt {
     visibility: hidden;
-    width: 120px;
+    width: 200px;
     background-color: #555;
-    color: #fff;
+    color: #bbb;
     text-align: center;
     padding: 5px 0;
     border-radius: 6px;
@@ -103,7 +117,7 @@ textarea {
 	z-index: 1;
 	bottom: 125%;
 	left: 50%;
-	margin-left: -60px;
+	margin-left: -100px;
 	
 	/* Fade in tooltip */
 	opacity: 0;
@@ -128,11 +142,19 @@ textarea {
     opacity: 1;
 }
 
+.ttt .itemname{
+	//border-bottom: 1px solid white;
+	font-weight: bold;
+	color: #fff;
+	//margin-bottom: 1em;
+	}
+
 .main_panel{
 	display:none;
 	//overflow: auto; 
 	//float:left;
 	width:350px;
+	min-width:300px;
 	height:100%;
 	background-color: #555;
 	border: 1px solid black;
@@ -166,20 +188,30 @@ textarea {
 	justify-content: center;
 }
 
+.horizontal_frames2{
+	display: flex;
+	flex-direction:row;
+	//align-self: center;
+	justify-content: space-around !important;
+	align-items: center;
+}
+
 .vertical_frames{
 	display: flex;
 	flex-direction:column;
 	align-self: center;
 	justify-content: center;
+	align-items: center;
 }
 
 .vertical_frames2{
 	display: flex;
 	flex-direction:column;
-	height: 100%;
+	//height: 100%;
 	//background-color: #fff;
 	//align-self: center;
 	justify-content: space-between !important;
+	align-items: center;
 }
 
 .padding0{
@@ -369,7 +401,7 @@ button:hover{
 	fill: #00dd00 !important;
 }
 
-#engine_storage {
+#engine_storage, .distil_storage {
 	background-color: #111;
 	width: 33px;
 	height: 33px;
@@ -377,6 +409,7 @@ button:hover{
 	border-radius: 10px;
 	display:flex;
 	justify-content: center;
+	margin: .3em;
 }
 
 #emem_table{
@@ -423,4 +456,18 @@ button:hover{
 	align-self: center;
 	z-index: 0;
 	//position: absolute;
+}
+
+.distil_stack{
+	//display: none;
+	background-color: #444;
+	border: 4px double black;
+	}
+	
+.distil_stack th, .distil_stack td {
+	//border: 1px solid black;
+	width: 66px;
+	height: 66px;
+	background-color: #333;
+	border-radius:5px;
 }
