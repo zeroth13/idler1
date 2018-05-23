@@ -31,11 +31,14 @@ function initWorld(loadIfAvailable=false){
 	w.autosavefreq=60*Math.round(1000/w.timestep);//currently 1 minute
 	
 	w.panels={};//stuff about panels
-	w.panels.journal={shown:false};
-	w.panels.inventory={shown:true};
-	w.panels.coder={shown:true};
-	w.panels.engine={shown:true};
-	w.panels.distil={shown:true};
+	w.panels.journal={shown:true,unlocked:true};
+	w.panels.inventory={shown:false,unlocked:false};
+	w.panels.coder={shown:false,unlocked:false};
+	w.panels.engine={shown:false,unlocked:false};
+	w.panels.distil={shown:false,unlocked:false};
+	
+	w.journalstate={page:null};
+	w.unlocks={};//just add flag:true for each unlock achieved?
 	
 	w.engine={};
 	w.engine.on=false;
@@ -67,31 +70,60 @@ function initWorld(loadIfAvailable=false){
 }
 
 function initDebug(){ //debug state for testing
+	
+	w.panels.journal.shown=true;
+	w.panels.inventory.shown=true;
+	w.panels.coder.shown=false;
+	w.panels.engine.shown=true;
+	w.panels.distil.shown=false;
+	
+	w.panels.journal.unlocked=true;
+	w.panels.inventory.unlocked=true;
+	w.panels.coder.unlocked=true;
+	w.panels.engine.unlocked=true;
+	w.panels.distil.unlocked=true;
+	
+	//w.unlocks.ulk_journal_coderef=true;
+	
 	var tmp;
 	
-	tmp = dict.newItem('processor');
+	tmp = dict.newItem('processor_basic');
 	moveItem(tmp.id,'inv',0);
 	tmp.code="mst 1;mmu 2;set -999;add @;0jm 2;jmp -4;mcl;stp".trim().split(/[\n;]+/);
 	
-	tmp = dict.newItem('processor');
+	tmp = dict.newItem('processor_basic');
 	moveItem(tmp.id,'inv',1);
+	tmp = dict.newItem('processor_basic');
+	moveItem(tmp.id,'inv',2);
+	tmp = dict.newItem('processor_basic');
+	moveItem(tmp.id,'inv',3);
 	
-	tmp = dict.newItem('vial');
-	//tmp.cont='test';
-	moveItem(tmp.id,'distil',0,0);
+	tmp = dict.newItem('vial_basic');
+	tmp.conttype='ember_faint';tmp.contnum=tmp.maxcontnum;
+	moveItem(tmp.id,'inv',4);
+	
+	tmp = dict.newItem('vial_basic');
+	tmp.conttype='ember_dim';tmp.contnum=tmp.maxcontnum;
+	moveItem(tmp.id,'inv',5);
+	
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'inv',8);
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'inv',9);
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'inv',10);
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'inv',11);
+	
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'distil',1,0);
 	
 	tmp = dict.newItem(null);
 	moveItem(tmp.id,'inv',27);
 	
-	//w.engine.surface[6]={quantum:'faint_ember'};
-	//w.engine.surface[8]={quantum:'dim_ember'};
-	//w.engine.surface[1]={quantum:'pale_ember'};
-	//w.engine.surface[0]={quantum:'pale_ember'};
-	//w.engine.storage={quantum:'pale_ember'};
-	
-	//w.distil.stacks[0].storage={quantum:'pale_ember'};
-	//w.distil.stacks[1].storage={quantum:'dim_ember'};
-	//w.distil.stacks[2].storage={quantum:'faint_ember'};
+	//w.engine.surface[6]=dict.newQuantum('ember_faint');
+	//w.engine.storage=dict.newQuantum('ember_faint');
+	//w.distil.stacks[0].storage=dict.newQuantum('ember_faint');
 	
 }
 
@@ -135,7 +167,7 @@ function moveItem(id,dest,destslot=null,destsubslot=null){
 		item.loc='distil';
 		item.locslot=destslot;
 		item.locsubslot=destsubslot;
-		ghtml_distilstacks(true);
+		ghtml_distilstacks('notstorage');
 	}
 	// else if(!w.otherlocs[dest]){ //if otherloc not occupied, move it to there
 	// w.otherlocs[dest]=item.id;
@@ -163,7 +195,7 @@ function moveItem(id,dest,destslot=null,destsubslot=null){
 		}
 		else if (oldloc=='distil') {
 			w.distil.stacks[oldlocslot].slots[oldlocsubslot]=null;
-			ghtml_distilstacks(true);
+			ghtml_distilstacks('notstorage');
 		}
 		// else {
 		// w.otherlocs[oldloc]=null;//for misc locs with only one slot
@@ -268,6 +300,39 @@ function engineOpen(){
 	}
 }
 
+function distilPullQuantum(stackind,fromslot,reqamount,reqtype){ //request a type and amount of quanta from a distil stack, starting from above fromslot (and going up). reqtype=null means any. Maybe change reqtype to a list later?
+	var pulled={amount:0,type:null};
+	var targetslot=-1;
+	
+	
+	if(w.distil.stacks[stackind] && w.distil.stacks[stackind].active){
+		var stack=w.distil.stacks[stackind];
+		
+		for(var slot=fromslot-1;slot>=0;slot--){//finds the first item above fromslot.
+			if(stack.slots[slot]){
+				targetslot=slot;
+				break;
+			}
+		}
+		
+		if(targetslot==-1){//target is the stack's internal storage slot
+			if(stack.storage && (!reqtype || reqtype==stack.storage.quantum) ){ ///////NOTE: Individual quantum storage slot follow same format as engine slots, {quantum:'string'}, but for items that is not the case, so here we just return the 'string'
+				pulled.amount=1;
+				pulled.type=stack.storage.quantum;
+				stack.storage=null;
+				ghtml_distilstacks(false,stackind);
+			}
+		}
+		else{//target is an item in the stack
+			var pulled=dict.pullQuantumFromItem(stack.slots[targetslot],reqamount,reqtype);
+		}
+		
+	}
+	
+	return pulled;
+	
+}
+
 function ghtml_itemTooltip(base,itemid){
 	var tooltip=dict.updateItemTooltip(itemid);
 	return '<div class="tt">'+base+'<span class="ttt" id="itemTooltip_'+itemid+'">'+tooltip+'</span></div>';
@@ -363,9 +428,7 @@ function ghtml_enginesurface(redraw=false,specslot=-2){
 		$('#engine_storage').children('.img_quanta').remove();
 		if(w.engine.storage){
 			var content='';
-			content=dict.quanta[w.engine.storage.quantum].img;
-			scale=Math.round(dict.quanta[w.engine.storage.quantum].imgscale*32);
-			content='<img src="img/'+content+'" class="img_quanta" style="width:'+scale+'px;height:'+scale+'px"/>';
+			content=dict.drawQuantum(w.engine.storage.quantum);
 			$('#engine_storage').append(content);
 			$('#engine_storage').children('.img_quanta').addClass('anim_fadein');
 		}
@@ -377,9 +440,7 @@ function ghtml_enginesurface(redraw=false,specslot=-2){
 		$('#esurf_table td').eq(specslot).children('.img_quanta').remove();
 		if(w.engine.surface[specslot]){
 			var content='';
-			content=dict.quanta[w.engine.surface[specslot].quantum].img;
-			scale=Math.round(dict.quanta[w.engine.surface[specslot].quantum].imgscale*32);
-			content='<img src="img/'+content+'" class="img_quanta" style="width:'+scale+'px;height:'+scale+'px"/>';
+			content=dict.drawQuantum(w.engine.surface[specslot].quantum);
 			$('#esurf_table td').eq(specslot).append(content);
 			$('#esurf_table td').eq(specslot).children('.img_quanta').addClass('anim_fadein');
 		}
@@ -454,9 +515,7 @@ function ghtml_distilstacks(redraw=false,specstorage=-1){
 		if(w.distil.stacks[specstorage].storage){
 			var content='';
 			var quantumtype=w.distil.stacks[specstorage].storage.quantum;
-			content=dict.quanta[quantumtype].img;
-			scale=Math.round(dict.quanta[quantumtype].imgscale*32);
-			content='<img src="img/'+content+'" class="img_quanta" style="width:'+scale+'px;height:'+scale+'px"/>';
+			content=dict.drawQuantum(quantumtype);
 			storage.append(content);
 			storage.children('.img_quanta').addClass('anim_fadein');
 		}
@@ -484,8 +543,66 @@ function ghtml_distilstacks(redraw=false,specstorage=-1){
 			table+='</tbody></table>';
 			$(this).children('.distil_stack_slots').html(table);
 			
-			ghtml_distilstacks(false,ind);
+			if(redraw!='notstorage') {ghtml_distilstacks(false,ind);} //hacky but better than nothing
 		});
+	}
+	
+	
+}
+
+function isUnlocked(flag){
+	return (!flag || w.unlocks[flag]);
+}
+
+function journalChangePage(page){
+	w.journalstate.page=page;
+	ghtml_journal();
+}
+
+function ghtml_journal() {
+	if(!w.journalstate.page){//if journal is on the index
+		$('.journal_btn').css('visibility', 'hidden');
+		var contents='';
+		for(var ind in journal.index){
+			index=journal.index[ind];
+			//if(!index.requnlock || w.unlocks[index.requnlock]){
+			if(isUnlocked(index.requnlock)){
+				contents+='<p class="journal_indexlink" onclick="journalChangePage(\''+index.pointsto+'\')">'+index.name+'</p>';
+			}
+		}
+		$('#journal_contents').html(contents);
+	}
+	else{
+		var page = journal.pages[w.journalstate.page]
+		
+		if(page.onopen){page.onopen();}//trigger any functions linked to the page's opening
+		
+		var contents='';
+		contents+='<p class="journal_pagetitle">'+page.title+'</p>';
+		contents+=page.contents;
+		
+		$('#journal_contents').html(contents);
+		
+		$('#journal_tonindex').css('visibility', 'visible');
+		if(page.pointsto && isUnlocked(journal.pages[page.pointsto].requnlock)){
+			$('#journal_rightpage').click(function(){journalChangePage(page.pointsto);});
+			$('#journal_rightpage').css('visibility', 'visible');
+		}else{$('#journal_rightpage').css('visibility', 'hidden');}
+		if(page.pointsfrom && isUnlocked(journal.pages[page.pointsfrom].requnlock)){
+			$('#journal_leftpage').click(function(){journalChangePage(page.pointsfrom);});
+			$('#journal_leftpage').css('visibility', 'visible');
+		}else{$('#journal_leftpage').css('visibility', 'hidden');}
+	}
+}
+
+function ghtml_panelselect() {
+	for(var panel in w.panels){
+		if(w.panels[panel].unlocked){
+			$("#pselect_"+panel).show();
+		}
+		else{
+			$("#pselect_"+panel).hide();
+		}
 	}
 }
 
@@ -502,6 +619,8 @@ function ghtml_renderall(){
 		}
 	}
 	
+	ghtml_panelselect();
+	ghtml_journal();
 	ghtml_inventory();
 	ghtml_coder();
 	ghtml_engineproc();
@@ -517,27 +636,27 @@ function ghtml_renderall(){
 		$('#engine_spointer').addClass('engine_spointer_on');
 	}
 	
-}
-
-function panelSelect(panel){
-	var display;
-	if(w.panels[panel]){
-		if(w.panels[panel].shown){
-			$('#d_'+panel).hide();
-			w.panels[panel].shown=false;
-			$("#pselect_"+panel).addClass('panel_selector_hidden');
-		}
-		else{
-			$('#d_'+panel).show();
-			w.panels[panel].shown=true;
-			$("#pselect_"+panel).removeClass('panel_selector_hidden');
-		}
 	}
-	//if(panel=='inventory'){
-	//display = $('d_inventory').css('display');
-	//if(display=='none'){display='block';}else {display='none';}
-	//$('d_inventory').css('display',display);
-//}
+	
+	function panelSelect(panel){
+		var display;
+		if(w.panels[panel]){
+			if(w.panels[panel].shown){
+				$('#d_'+panel).hide();
+				w.panels[panel].shown=false;
+				$("#pselect_"+panel).addClass('panel_selector_hidden');
+			}
+			else{
+				$('#d_'+panel).show();
+				w.panels[panel].shown=true;
+				$("#pselect_"+panel).removeClass('panel_selector_hidden');
+			}
+		}
+		//if(panel=='inventory'){
+		//display = $('d_inventory').css('display');
+		//if(display=='none'){display='block';}else {display='none';}
+		//$('d_inventory').css('display',display);
+	//}
 }
 
 function parseDatum(a){
@@ -545,8 +664,6 @@ function parseDatum(a){
 	if(a==='@'){return w.engine.memory[w.engine.mpPos];}
 	a=parseInt(a);
 	return isNaN(a) ? 0 : a;
-	//return isNaN(a) ? 0 : Math.min(Math.max(a, -999), 999);
-	return a;
 }
 
 function clampDatum(a){
@@ -558,6 +675,12 @@ function clampPeriodic(v,num){ //places v between 0,num-1 inclusive, according t
 	v=(v+num)%num;//need this in case it was negative...
 	return v;
 }
+
+/* function getSurfaceQuantum(slot){
+	slot=clampPeriodic(slot,w.engine.surfacenum);
+	if(!w.engine.surface(slot)){return null;}
+	else {return w.engine.surface(slot).quantum};
+} */
 
 function simStep(){
 	
@@ -730,8 +853,15 @@ function simStep(){
 					break;
 					
 					case 'pul'://pulls a quantum from the distillery of given number to storage.
-					//[[CURRENTLY DOES NOTHING]]
-					ghtml_enginesurface(false,-1);
+					var distnum=parseDatum(ops[1])-1;//note the -1...
+					var stor=w.engine.storage, dist=w.distil.stacks[distnum];
+					if(!stor && dist && dist.active){
+						var pulled = distilPullQuantum(distnum,w.distil.stacklength,1,null);//requests 1 of any type of quantum, starting from the bottom of the stack
+						if(pulled.amount>0){
+							w.engine.storage=dict.newQuantum(pulled.type);
+							ghtml_enginesurface(false,-1);
+						}
+					}
 					break;
 					
 					case 'nop'://no op (currently also just default behaviour, maybe make unrecognized ops error instead?)
@@ -753,14 +883,29 @@ function simStep(){
 		}
 	}
 	
+	//quanta tick on engine surface (and maybe in engine/distil single-slots too?)
+	for(var i =0;i<w.engine.surfacenum;i++){//maybe make it traverse the surface in random order? might not really matter at the rates stuff gets randomly generated on the surface...
+		dict.tickQuantum(i);
+	}
 	
 	//engine surface gathers quanta if open
 	if(w.engine.open){
 		if(rand(600/600)){
 			var slot = roll(w.engine.surfacenum);
 			if(!w.engine.surface[slot]){
-				w.engine.surface[slot]={quantum:'faint_ember'};
+				w.engine.surface[slot]=dict.newQuantum('ember_faint');
 				ghtml_enginesurface(false,slot);
+			}
+		}
+	}
+	
+	//tick all the active stacks' items
+	for(var stackind=0;stackind<w.distil.stacks.length;stackind++){
+		if(w.distil.stacks[stackind].active){
+			for(var slot=0;slot<w.distil.stacklength;slot++){//maybe might want to traverse the slots from bottom up instead?
+				if(w.distil.stacks[stackind].slots[slot]){
+					dict.tickItem(w.distil.stacks[stackind].slots[slot]);
+				}
 			}
 		}
 	}
@@ -784,4 +929,5 @@ $( document ).ready(function() {
 	//start the main sim loop
 	var simloop = setInterval(function(){ simStep() }, w.timestep);
 	
-	});																									
+});		
+

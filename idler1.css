@@ -147,7 +147,7 @@ textarea {
 	font-weight: bold;
 	color: #fff;
 	//margin-bottom: 1em;
-	}
+}
 
 .main_panel{
 	display:none;
@@ -161,6 +161,7 @@ textarea {
 	display: flex;
     justify-content: space-between;
 	flex-direction:column;
+	//text-align:center;
 }
 
 .panel_selector{
@@ -171,6 +172,7 @@ textarea {
 	line-height:2em;
 	border:2px solid white;
 	background-color:#000;
+	display:none;
 }
 
 .panel_selector_hidden{
@@ -212,6 +214,14 @@ textarea {
 	//align-self: center;
 	justify-content: space-between !important;
 	align-items: center;
+}
+
+.fitmax{
+	width:90%;
+	//height:90%;
+	align-self:center;
+	flex-grow: 1;
+	//background-color:black;
 }
 
 .padding0{
@@ -337,7 +347,6 @@ button {
 	border-radius: 28px;
 	border: 3px solid black;
 	outline: none;
-	transition: .2s linear;
 	display: flex;
 	justify-content: center;
 }
@@ -359,6 +368,7 @@ button:hover{
 .engine_btn{
 	width: 30px;
 	//height: 30px;
+	transition: .2s linear;
 }
 
 #engine_purge{
@@ -449,6 +459,7 @@ button:hover{
 
 .img_quanta {
 	display: block;
+	//display: inline;
     margin-left: auto;
     margin-right: auto;
 	width: 32px;
@@ -456,14 +467,30 @@ button:hover{
 	align-self: center;
 	z-index: 0;
 	//position: absolute;
+	//float:left;
+}
+
+.img_quanta_inline{
+	display: inline;
+	width: 32px;
+	height: 32px;
+	//background-color: #000;
+}
+
+.img_quanta_inline_container{
+	//width: 32px;
+	//height: 32px;
+	padding: 2px;
+	background-color: #000;
+	border-radius: 4px;
 }
 
 .distil_stack{
 	//display: none;
 	background-color: #444;
 	border: 4px double black;
-	}
-	
+}
+
 .distil_stack th, .distil_stack td {
 	//border: 1px solid black;
 	width: 66px;
@@ -471,3 +498,60 @@ button:hover{
 	background-color: #333;
 	border-radius:5px;
 }
+
+#d_journal{
+	justify-content: flex-start;
+}
+
+#journal_contents{
+	//align-self: center;
+	text-align:center;
+	background-color: #444;
+	//min-height:120px;
+	//min-height: 100%;
+	width:90%;
+	flex-grow: 1;
+	border-radius:10px;
+}
+
+.journal_btn{
+	width: 60px;
+	height: 30px;
+	//display: none;
+	visibility:hidden;
+}
+
+.journal_indexlink{
+	color:#ddd;
+	background-color:black;
+	//margin-bottom: 0;
+	//margin-top: 0;
+}
+.journal_indexlink:hover{
+	color:#fff;
+}
+.journal_pagetitle{
+	color:#ddd;
+	background-color:black;
+}
+.journal_lore{
+	color:#fff;
+	font-style: italic;
+	font-family: 'Play', sans-serif;
+	margin: 1em;
+}
+.journal_text{
+	color:#fff;
+	font-family: 'Play', sans-serif;
+	text-align:left;
+	margin: 1em;
+}
+
+
+
+
+
+
+
+
+

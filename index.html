@@ -21,6 +21,7 @@
 		<script>document.write('<link rel="stylesheet" type="text/css" href="idler1.css?dev=' + Math.floor(Math.random() * 100000000) + '"\><\/script>');</script>
 		
 		<!-- Javascript -->
+		<script>document.write('<script type="text/javascript" src="journal.js?dev=' + Math.floor(Math.random() * 100000000) + '"\><\/script>');</script>
 		<script>document.write('<script type="text/javascript" src="dict.js?dev=' + Math.floor(Math.random() * 100000000) + '"\><\/script>');</script>
 		<script>document.write('<script type="text/javascript" src="idler1.js?dev=' + Math.floor(Math.random() * 100000000) + '"\><\/script>');</script>
 		
@@ -39,6 +40,12 @@
 			
 			<div id="d_journal" class="main_panel">
 				<div class="padding0"><h3>JOURNAL</h3></div>
+				<div class="padding0 fitmax"><div id="journal_contents"></div></div>
+				<div class="padding0 horizontal_frames">
+					<div class="padding"><button type="button" onclick="" class="journal_btn" id="journal_leftpage"><img src="img/ui_left.png" /></button></div>
+					<div class="padding"><button type="button" onclick="journalChangePage(null)" class="journal_btn" id="journal_tonindex"><img src="img/ui_index.png" /></button></div>
+					<div class="padding"><button type="button" onclick="" class="journal_btn" id="journal_rightpage"><img src="img/ui_right.png" /></button></div>
+				</div>
 			</div>
 			
 			
