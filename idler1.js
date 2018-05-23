@@ -367,7 +367,7 @@ function distilPullQuantum(stackind,fromslot,reqamount,reqtype){ //request a typ
 		
 		if(targetslot==-1){//target is the stack's internal storage slot
 			if(stack.storage && (!reqtype || reqtype==stack.storage.quantum) ){ ///////NOTE: Individual quantum storage slot follow same format as engine slots, {quantum:'string'}, but for items that is not the case, so here we just return the 'string'
-				pulled.amount=1;
+				pulled.amount=Math.min(reqamount,1);
 				pulled.type=stack.storage.quantum;
 				stack.storage=null;
 				ghtml_distilstacks(false,stackind);

@@ -202,11 +202,13 @@ dict.itemFncs.vial_basic={
 		var item=w.items[id];
 		if(item.loc=='distil'){
 			var canpull = Math.min(item.maxcontnum-item.contnum,item.pullspeed);
-			var pulled = distilPullQuantum(item.locslot,item.locsubslot,canpull,item.conttype);
-			if (pulled.amount>0){
-				item.conttype=pulled.type;
-				item.contnum+=pulled.amount;
-				dict.updateItemTooltip(id); //again, is this the best place for this? not sure...
+			if (canpull>0){
+				var pulled = distilPullQuantum(item.locslot,item.locsubslot,canpull,item.conttype);
+				if (pulled.amount>0){
+					item.conttype=pulled.type;
+					item.contnum+=pulled.amount;
+					dict.updateItemTooltip(id); //again, is this the best place for this? not sure...
+				}
 			}
 		}
 	},
@@ -239,11 +241,13 @@ dict.itemFncs.mould_basic={
 		if(item.loc=='distil'){
 			if(item.contnum<item.maxcontnum){
 				var canpull = Math.min(item.maxcontnum-item.contnum,item.pullspeed);
-				var pulled = distilPullQuantum(item.locslot,item.locsubslot,canpull,item.conttype);
-				if (pulled.amount>0){
-					item.conttype=pulled.type;
-					item.contnum+=pulled.amount;
-					dict.updateItemTooltip(id);
+				if (canpull>0){
+					var pulled = distilPullQuantum(item.locslot,item.locsubslot,canpull,item.conttype);
+					if (pulled.amount>0){
+						item.conttype=pulled.type;
+						item.contnum+=pulled.amount;
+						dict.updateItemTooltip(id);
+					}
 				}
 			}
 			else if(item.craftprogress<item.maxcraftprogress){
@@ -255,7 +259,7 @@ dict.itemFncs.mould_basic={
 				item.contnum=0;
 				item.craftprogress=0;
 				var tmp = dict.newItem('resource_glass');
-				moveItem(tmp.id,'distil',item.locslot,item.locsubslot+1);
+			moveItem(tmp.id,'distil',item.locslot,item.locsubslot+1);
 			}
 		}
 	},
