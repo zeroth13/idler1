@@ -73,7 +73,7 @@ journal.pages.demo_start={title:"A Fortuitous Find",requnlock:null,pointsto:'dem
 journal.pages.demo_start.contents =
 '<p class="journal_lore">"Journal entry: 5th of December, 41st year of the Towerfall Era."</p>'+
 //Nirsinian, Wyravese?
-'<p class="journal_lore">"The most fortuitous of luck shone on me this day. My contact finally managed to procure a functioning Ancient Nirsinian relic. He asked a pretty penny for it, but I am certain the item will prove worth the price."</p>'+
+'<p class="journal_lore">"The most fortuitous of luck shone on me this day. My contact finally managed to procure a functioning relic of Ancient Nirsinian origin. He asked a pretty penny for it, but I am certain the item will prove worth the price."</p>'+
 '<p class="journal_text">Welcome to this game prototype\'s demo tutorial! Use the buttons directly below this text to turn through the journal pages or return to the index. Use the buttons further below to open and close various game panels as they unlock.</p>'+
 '<p class="journal_text">(Note that saving is disabled in this demo.)</p>';
 
@@ -145,11 +145,12 @@ journal.pages.demo_opensurface.contents =
 journal.pages.demo_end={title:"The End of the Beginning",requnlock:null,pointsto:null,pointsfrom:'demo_opensurface'};
 journal.pages.demo_end.contents =
 '<p class="journal_lore">"This will be the Engine\'s first true test: the generation of useful material wholly from residual Aetheric emanations. Certainly the first achievement of many, as well as the first step towards ushering in a new Age of Wonders..."</p>'+
-'<p class="journal_text">This practically concludes this demo. You have been provided with additional empty vials and Glyphmatrices in your inventory, as well as a ########. Additionally, the Glyph Reference has been unlocked and is accessible from the journal index.</p>';
+'<p class="journal_text">This practically concludes this demo. You have been provided with additional empty vials and Glyphmatrices in your inventory, as well as a casting mould. The mould accepts 10 of the same type of quantum (it can not hold two types at once) and outputs a sheet of glass in the spot below itself. In the full game, different quanta would output different products. Note that, unlike vials, quanta inside the casting mould do not flow to the next item down the stack and can not be pulled by the engine.</p>'+
+'<p class="journal_text">Additionally, the Glyph Reference has been unlocked and is accessible from the journal index.</p>';
 journal.pages.demo_end.onopen = function() {
 	w.unlocks.ulk_journal_coderef=true;
 	
-	if(!w.unlocks.ulk_journal_democomplete){
+	if(!w.unlocks.ulk_democomplete){
 		var tmp;
 		for(i=0;i<4;i++){
 			tmp = dict.newItem('processor_basic');
@@ -159,7 +160,9 @@ journal.pages.demo_end.onopen = function() {
 			tmp = dict.newItem('vial_basic');
 			moveItem(tmp.id,'inv',getInvFreeSlot());
 		}
-		w.unlocks.ulk_journal_democomplete=true;
+		tmp = dict.newItem('mould_basic');
+		moveItem(tmp.id,'inv',getInvFreeSlot());
+		w.unlocks.ulk_democomplete=true;
 	}
 	
 }

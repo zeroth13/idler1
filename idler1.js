@@ -95,35 +95,38 @@ function initDebug(){ //debug state for testing
 	var tmp;
 	
 	tmp = dict.newItem('processor_basic');
-	moveItem(tmp.id,'inv',0);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp.code="mst 1;mmu 2;set -999;add @;0jm 2;jmp -4;mcl;stp".trim().split(/[\n;]+/);
 	
 	tmp = dict.newItem('processor_basic');
-	moveItem(tmp.id,'inv',1);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp = dict.newItem('processor_basic');
-	moveItem(tmp.id,'inv',2);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp = dict.newItem('processor_basic');
-	moveItem(tmp.id,'inv',3);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	
 	tmp = dict.newItem('vial_basic');
 	tmp.conttype='ember_faint';tmp.contnum=tmp.maxcontnum;
-	moveItem(tmp.id,'inv',4);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	
 	tmp = dict.newItem('vial_basic');
-	tmp.conttype='ember_dim';tmp.contnum=tmp.maxcontnum;
-	moveItem(tmp.id,'inv',5);
+	tmp.conttype='ember_faint';tmp.contnum=tmp.maxcontnum;
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	
 	tmp = dict.newItem('vial_basic');
-	moveItem(tmp.id,'inv',8);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp = dict.newItem('vial_basic');
-	moveItem(tmp.id,'inv',9);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp = dict.newItem('vial_basic');
-	moveItem(tmp.id,'inv',10);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	tmp = dict.newItem('vial_basic');
-	moveItem(tmp.id,'inv',11);
+	moveItem(tmp.id,'inv',getInvFreeSlot());
 	
-	tmp = dict.newItem('vial_basic');
-	moveItem(tmp.id,'distil',1,0);
+	tmp = dict.newItem('mould_basic');
+	moveItem(tmp.id,'inv',getInvFreeSlot());
+	
+	//tmp = dict.newItem('vial_basic');
+	//moveItem(tmp.id,'distil',1,0);
 	
 	tmp = dict.newItem(null);
 	moveItem(tmp.id,'inv',27);
@@ -256,6 +259,11 @@ function getInvFreeSlot(){//returns the first slot number that is free, or -1 if
 		if(!w.inventory[i]){return i;}
 	}
 	return -1;
+}
+
+function isDistilSlotEmpty(stack,slot){//note, doesnt check if stack is active
+	if(slot>=w.distil.stacklength || slot<0 || !w.distil.stacks[stack] || w.distil.stacks[stack].slots[slot]) {return false;}
+	return true;
 }
 
 //drag and drop for items

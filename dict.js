@@ -213,11 +213,52 @@ dict.itemFncs.vial_basic={
 };
 
 
+dict.itemProt.resource_glass={name:'Glass Sheet',img:'obj_glasssheet.png'};
 
-
-
-
-
-
+dict.itemProt.mould_basic={name:'Casting Mould',img:'obj_mould.png',conttype:null,contnum:0,maxcontnum:10,pullspeed:1,craftprogress:0,maxcraftprogress:300};
+dict.itemFncs.mould_basic={
+	tooltip:function(id){
+		var item=w.items[id];
+		var tooltip='';
+		tooltip+='<span class="itemname">'+item.name+"</span>";
+		if(item.craftprogress==0){
+			if(item.conttype){
+				tooltip+='<br/>'+dict.drawQuantum(item.conttype,true)+' '+dict.quanta[item.conttype].name+' : '+item.contnum+'/'+item.maxcontnum+'';
+			}
+			else{
+				tooltip+='<br/>(empty) : '+item.contnum+'/'+item.maxcontnum+'';
+			}
+		}
+		else {
+			tooltip+='<br/> Cast is cooling... '+Math.round(item.craftprogress/item.maxcraftprogress*100)+'%';
+		}
+		return tooltip;
+	},
+	tickItem:function(id){
+		var item=w.items[id];
+		if(item.loc=='distil'){
+			if(item.contnum<item.maxcontnum){
+				var canpull = Math.min(item.maxcontnum-item.contnum,item.pullspeed);
+				var pulled = distilPullQuantum(item.locslot,item.locsubslot,canpull,item.conttype);
+				if (pulled.amount>0){
+					item.conttype=pulled.type;
+					item.contnum+=pulled.amount;
+					dict.updateItemTooltip(id);
+				}
+			}
+			else if(item.craftprogress<item.maxcraftprogress){
+				item.craftprogress++;
+				dict.updateItemTooltip(id);
+			}
+			else if(item.craftprogress>=item.maxcraftprogress && isDistilSlotEmpty(item.locslot,item.locsubslot+1)){
+				item.conttype=null;
+				item.contnum=0;
+				item.craftprogress=0;
+				var tmp = dict.newItem('resource_glass');
+				moveItem(tmp.id,'distil',item.locslot,item.locsubslot+1);
+			}
+		}
+	},
+}
 
 
