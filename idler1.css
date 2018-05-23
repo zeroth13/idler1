@@ -376,6 +376,11 @@ button:hover{
 	display:none;
 }
 
+#engine_open{
+	visibility:hidden;
+	//display:none;
+}
+
 #esurf_table{
 	border: 3px solid #222;
 	background-color: #666;
@@ -524,6 +529,8 @@ button:hover{
 .journal_indexlink{
 	color:#ddd;
 	background-color:black;
+	font-family: 'Play', sans-serif;
+	font-weight: bold;
 	//margin-bottom: 0;
 	//margin-top: 0;
 }
@@ -533,9 +540,11 @@ button:hover{
 .journal_pagetitle{
 	color:#ddd;
 	background-color:black;
+	font-family: 'Play', sans-serif;
+	font-weight: bold;
 }
 .journal_lore{
-	color:#fff;
+	color:#ccc;
 	font-style: italic;
 	font-family: 'Play', sans-serif;
 	margin: 1em;
@@ -543,11 +552,17 @@ button:hover{
 .journal_text{
 	color:#fff;
 	font-family: 'Play', sans-serif;
-	text-align:left;
+	text-align:justify;
 	margin: 1em;
 }
 
-
+.inline_code{
+	color:#0f0;
+	font-weight: bold;
+	//background-color:black;
+	//padding-left: .5em;
+	//padding-right: .5em;
+	}
 
 
 

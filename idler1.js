@@ -83,6 +83,7 @@ function initDebug(){ //debug state for testing
 	w.panels.engine.unlocked=true;
 	w.panels.distil.unlocked=true;
 	
+	w.unlocks.ulk_engine_open=true;
 	//w.unlocks.ulk_journal_coderef=true;
 	
 	var tmp;
@@ -127,6 +128,23 @@ function initDebug(){ //debug state for testing
 	
 }
 
+function initDemo(){
+	w.journalstate.page='demo_start';
+	
+	var tmp;
+	
+	tmp = dict.newItem('processor_basic');
+	moveItem(tmp.id,'inv',0);
+	tmp.code="mst 1;mmu 2;set -999;add @;0jm 2;jmp -4;mcl;stp".trim().split(/[\n;]+/);
+	
+	tmp = dict.newItem('processor_basic');
+	moveItem(tmp.id,'coder');
+	
+	w.engine.surface[0]=dict.newQuantum('ember_faint');
+	w.engine.surface[5]=dict.newQuantum('ember_faint');
+	w.engine.surface[8]=dict.newQuantum('ember_faint');
+}
+
 function saveWorld(){
 	localStorage.setItem('worldSave', JSON.stringify(w));
 }
@@ -134,6 +152,10 @@ function saveWorld(){
 function forceLoadWorld(){//for debugging
 	initWorld(true);
 	ghtml_renderall();
+}
+
+function isUnlocked(flag){
+	return (!flag || w.unlocks[flag]);
 }
 
 
@@ -419,6 +441,8 @@ function ghtml_engineproc() {
 		slot.addClass('coder_slot_fade');
 	}
 	
+	if(isUnlocked('ulk_engine_open')){$('#engine_open').css('visibility', 'visible');}else{$('#engine_open').css('visibility', 'hidden');};
+	
 }
 
 function ghtml_enginesurface(redraw=false,specslot=-2){
@@ -550,10 +574,6 @@ function ghtml_distilstacks(redraw=false,specstorage=-1){
 	
 }
 
-function isUnlocked(flag){
-	return (!flag || w.unlocks[flag]);
-}
-
 function journalChangePage(page){
 	w.journalstate.page=page;
 	ghtml_journal();
@@ -564,7 +584,7 @@ function ghtml_journal() {
 		$('.journal_btn').css('visibility', 'hidden');
 		var contents='';
 		for(var ind in journal.index){
-			index=journal.index[ind];
+			var index=journal.index[ind];
 			//if(!index.requnlock || w.unlocks[index.requnlock]){
 			if(isUnlocked(index.requnlock)){
 				contents+='<p class="journal_indexlink" onclick="journalChangePage(\''+index.pointsto+'\')">'+index.name+'</p>';
@@ -585,11 +605,11 @@ function ghtml_journal() {
 		
 		$('#journal_tonindex').css('visibility', 'visible');
 		if(page.pointsto && isUnlocked(journal.pages[page.pointsto].requnlock)){
-			$('#journal_rightpage').click(function(){journalChangePage(page.pointsto);});
+			$('#journal_rightpage').off().click(function(){journalChangePage(page.pointsto);});
 			$('#journal_rightpage').css('visibility', 'visible');
 		}else{$('#journal_rightpage').css('visibility', 'hidden');}
 		if(page.pointsfrom && isUnlocked(journal.pages[page.pointsfrom].requnlock)){
-			$('#journal_leftpage').click(function(){journalChangePage(page.pointsfrom);});
+			$('#journal_leftpage').off().click(function(){journalChangePage(page.pointsfrom);});
 			$('#journal_leftpage').css('visibility', 'visible');
 		}else{$('#journal_leftpage').css('visibility', 'hidden');}
 	}
@@ -921,7 +941,8 @@ $( document ).ready(function() {
 	
 	//init the world
 	initWorld();
-	initDebug();
+	//initDebug();
+	initDemo();
 	
 	//render stuff
 	ghtml_renderall();
