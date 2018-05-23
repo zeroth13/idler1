@@ -59,12 +59,13 @@ function initWorld(loadIfAvailable=false){
 	
 	w.distil={};
 	w.distil.stacklength=5;//slots in each stack
-	w.distil.stacks=[{active:true,slots:[]},{active:true,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]}];
+	w.distil.stacks=[{active:true,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]},{active:false,slots:[]}];
 	
 	w.items=[];
 	w.items_nextid=1; //starting at zero gave me migraines due to null/zero/undefined bugs... so this is the lazy solution
 	
 	w.inventory=[];
+	w.inventorynum=4*7;
 	w.otherlocs={}; //misc locs for items, probably single slot ones?
 	
 }
@@ -84,7 +85,12 @@ function initDebug(){ //debug state for testing
 	w.panels.distil.unlocked=true;
 	
 	w.unlocks.ulk_engine_open=true;
-	//w.unlocks.ulk_journal_coderef=true;
+	
+	w.unlocks.ulk_journal_coderef=true;
+	w.unlocks.ulk_journal_demo=true;
+	
+	w.distil.stacks[0].active=true;
+	w.distil.stacks[1].active=true;
 	
 	var tmp;
 	
@@ -129,6 +135,9 @@ function initDebug(){ //debug state for testing
 }
 
 function initDemo(){
+	
+	//w.unlocks.ulk_journal_coderef=true;
+	w.unlocks.ulk_journal_demo=true;
 	w.journalstate.page='demo_start';
 	
 	var tmp;
@@ -140,9 +149,13 @@ function initDemo(){
 	tmp = dict.newItem('processor_basic');
 	moveItem(tmp.id,'coder');
 	
+	tmp = dict.newItem('vial_basic');
+	moveItem(tmp.id,'distil',0,0);
+	
 	w.engine.surface[0]=dict.newQuantum('ember_faint');
 	w.engine.surface[5]=dict.newQuantum('ember_faint');
 	w.engine.surface[8]=dict.newQuantum('ember_faint');
+	
 }
 
 function saveWorld(){
@@ -236,6 +249,13 @@ function get_inv(invslot){
 	else{
 		return null;
 	}
+}
+
+function getInvFreeSlot(){//returns the first slot number that is free, or -1 if none are free
+	for(var i=0;i<w.inventorynum;i++){
+		if(!w.inventory[i]){return i;}
+	}
+	return -1;
 }
 
 //drag and drop for items
@@ -365,7 +385,7 @@ function ghtml_inventory(){
 	
 	var table='<table id="inv_table"><tbody>';
 	
-	var invx=4, invy=7;
+	var invx=4, invy=7;//make this configurable in world state.......!!!
 	for (var y=0; y<invy; y++) {
 		table+='<tr>';
 		for (var x=0; x<invx; x++) {
@@ -910,7 +930,7 @@ function simStep(){
 	
 	//engine surface gathers quanta if open
 	if(w.engine.open){
-		if(rand(600/600)){
+		if(rand(12/(60*10))){
 			var slot = roll(w.engine.surfacenum);
 			if(!w.engine.surface[slot]){
 				w.engine.surface[slot]=dict.newQuantum('ember_faint');
